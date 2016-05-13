@@ -18,6 +18,7 @@
     "autoload" : {
         "psr-4" : {
             "PHPLegends\\Http\\" : "src/"
-        }
+        },
+        "files" : ["src/functions.php"]
     }
 }

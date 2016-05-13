@@ -9,7 +9,7 @@ use Psr\Http\Message\ServerRequestInterface;
  * @author Wallace de Souza Vizerra <wallacemaxters@gmail.com>
  * 
  * */
-class ServerRequest implements ServerRequestInterface
+class ServerRequest extends Request implements ServerRequestInterface
 {
 	protected $serverParams = [];
 
@@ -110,7 +110,7 @@ class ServerRequest implements ServerRequestInterface
      *
      * @return self
      */
-    protected function setUploadedFiles($uploadedFiles)
+    public function setUploadedFiles($uploadedFiles)
     {
         $this->uploadedFiles = $uploadedFiles;
 
@@ -130,14 +130,77 @@ class ServerRequest implements ServerRequestInterface
     /**
      * Sets the value of attributes.
      *
-     * @param mixed $attributes the attributes
+     * @param array $attributes the attributes
      *
      * @return self
      */
-    protected function setAttributes($attributes)
+    public function setAttributes(array  $attributes)
     {
         $this->attributes = $attributes;
 
         return $this;
     }
+
+
+
+    public function withCookieParams(array $cookies)
+    {
+
+    }
+
+    public function withQueryParams(array $params)
+    {
+
+    }
+
+    public function withUploadedFiles(array $attributes)
+    {
+
+    }
+
+    public function getParsedBody()
+    {
+
+    }
+
+    public function withAttribute($name, $attribute)
+    {
+
+    }
+
+    public function withParsedBody($data)
+    {
+
+    }
+
+    public function withoutAttribute($name)
+    {
+
+    }
+
+    public function getAttribute($name, $default = null)
+    {
+
+    }
+
+    public static function createFromGlobals()
+    {
+
+        $method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
+
+        $headers = \PHPLegends\Http\get_all_headers();
+
+        $body = new Stream('php://input', 'r+');
+
+        $protocol = isset($_SERVER['SERVER_PROTOCOL']) ? str_replace('HTTP/', '', $_SERVER['SERVER_PROTOCOL']) : '1.1';
+
+        $serverRequest = new self($method, $uri, $headers, $body, $protocol, $_SERVER);
+
+        return $serverRequest
+            ->withCookieParams($_COOKIE)
+            ->withQueryParams($_GET)
+            ->withParsedBody($_POST)
+            ->withUploadedFiles($_FILES);
+    }
+
 }

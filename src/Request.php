@@ -1,17 +1,27 @@
 <?php
 
 namespace PHPLegends\Http;
-use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UriInterface;
 
-class Request extends Message implements ResponseInterface
+class Request extends Message implements RequestInterface
 {
 
 	protected $target;
 
 	protected $uri;
 
-	protected $method;
+	protected $method = 'GET';
+
+    public function __construct ($method, UriInterface $uri, array $headers = [], StreamInterface $body = null, $protocolVersion = '1.1') {
+
+      	parent::__construct($body, $headers);
+
+      	$this->setMethod($method)
+        	  ->setUri($uri)
+        	  ->setProtocolVersion($protocolVersion);
+    }
 
 	public function getRequestTarget()
 	{
@@ -46,7 +56,7 @@ class Request extends Message implements ResponseInterface
 
 	public function withMethod($method)
 	{
-		$clone = $this;
+		$clone = clone $this;
 
 		return $clone->setMethod($method);
 	}
@@ -65,7 +75,7 @@ class Request extends Message implements ResponseInterface
 
 	public function withUri(UriInterface $uri, $preserveHost = false)
 	{
-		$clone = $this;
+		$clone = clone $this;
 
 		if (! $preserveHost)
 		{
@@ -74,4 +84,34 @@ class Request extends Message implements ResponseInterface
 
 		return $clone->setUri($uri);
 	}
+
+    /**
+     * Gets the value of target.
+     *
+     * @return mixed
+     */
+    public function getTarget()
+    {
+        return $this->target;
+    }
+
+    /**
+     * Sets the value of target.
+     *
+     * @param mixed $target the target
+     *
+     * @return self
+     */
+    protected function setTarget($target)
+    {
+        $this->target = $target;
+
+        return $this;
+    }
+
+    public function isSecure()
+    {
+    	return $this->getUri()->getScheme() === 'https';
+    }
+
 }

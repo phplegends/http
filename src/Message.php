@@ -22,12 +22,14 @@ class Message implements MessageInterface
 	/**
 	 * @var string
 	 * */
-	protected $protocolVersion = '1.0';
+	protected $protocolVersion = '1.2';
 
 
-	public function __construct(StreamInterface $body)
+	public function __construct(StreamInterface $body = null, array $headers = [])
 	{
 		$this->body = $body;
+
+		$this->setHeaders($headers);
 	}
 
 	/**
@@ -69,7 +71,7 @@ class Message implements MessageInterface
 	 *
 	 * @return self
 	 */
-	public function setHeaders(array $headers)
+	protected function setHeaders(array $headers)
 	{
 	    foreach ($headers as $name => $value) {
 	    	
@@ -79,9 +81,11 @@ class Message implements MessageInterface
 	    return $this;
 	}
 
-	public function setHeader($name, $value)
+	protected function setHeader($name, $value)
 	{
-		$this->headers[strtoupper($name)] = (array) $value;
+		$name = $this->normalizeHeaderName($name);
+
+		$this->headers[$name] = (array) $value;
 
 		return $this;
 	}
@@ -91,7 +95,7 @@ class Message implements MessageInterface
 	 * 
 	 * @return  array | false
 	 * */
-	public function removeHeader($name)
+	protected function removeHeader($name)
 	{
 		if (! $this->hasHeader($name))
 		{
@@ -107,7 +111,7 @@ class Message implements MessageInterface
 
 	public function getHeader($name)
 	{
-		$name = strtoupper($name);
+		$name = $this->normalizeHeaderName($name);
 
 		$headers = $this->headers + [$name => []];
 
@@ -116,17 +120,17 @@ class Message implements MessageInterface
 
 	public function hasHeader($name)
 	{
-		return isset($this->headers[strtoupper($name)]);
+		return isset($this->headers[$this->normalizeHeaderName($name)]);
 	}
 
-	public function removeAllHeaders()
+	protected function removeAllHeaders()
 	{
 		$this->headers = [];
 
 		return $this;
 	}
 
-	public function mergeHeader($name, $value)
+	protected function mergeHeader($name, $value)
 	{
 		if ($this->hasHeader($name))
 		{
@@ -167,7 +171,7 @@ class Message implements MessageInterface
 	{
 		if ($this->hasHeader($name))
 		{
-			return sprintf('%s: %s', $name, implode(',', $this->getHeader($name)));
+			return implode(', ', $this->getHeader($name));
 		}
 
 		return '';
@@ -209,5 +213,10 @@ class Message implements MessageInterface
 	    $this->body = $body;
 
 	    return $this;
+	}
+
+	protected function normalizeHeaderName($name)
+	{
+		return mb_convert_case($name, MB_CASE_TITLE);
 	}
 }
