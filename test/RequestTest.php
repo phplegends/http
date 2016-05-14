@@ -12,7 +12,27 @@ class RequestTest extends PHPUnit_Framework_TestCase
 			'https://wallacemaxters:password@phplegends.com.br/repo/testing?order=desc#phplegends'
 		);
 
-		$this->req = new ServerRequest('GET', $this->uri, ['x-foo' => 'bar']);
+		$_FILES = [
+			'user' => [
+				'image' => [
+					[
+						'tmp_name' => tempnam(null, 'uploaded'),
+						'size'     => 555,
+						'error'    => 0,
+						'type'     => 'image/png'
+					], 
+
+					[
+						'tmp_name' => tempnam(null, 'uploaded'),
+						'size'     => 555,
+						'error'    => 0,
+						'type'     => 'image/png'
+					]
+				]
+			]
+		];
+
+		$this->req = ServerRequest::createFromGlobals()->withUri($this->uri);
 	}
 
 	public function testRequest()
@@ -28,8 +48,32 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
 		$this->assertTrue($this->req->isSecure());
 
-		$secure = $this->req->withUri($this->uri->withScheme('http'))->isSecure();
+		$new_uri = $this->uri->withScheme('http');
+
+		$new_req = $this->req->withUri($new_uri);
+
+		$secure = $new_req->isSecure();
+
+		$this->assertFalse($new_req === $this->req);
+
+		$this->assertFalse($new_uri === $this->req->getUri());	
 
 		$this->assertFalse($secure);
+	}
+
+
+	public function testUpload()
+	{
+		$upload = $this->req->getUploadedFiles();
+
+		// Upload cannot writtable
+
+		$this->assertFalse($upload['user']['image'][0]->getStream()->isWritable());
+
+		// Upload is readable
+
+		$this->assertTrue($upload['user']['image'][0]->getStream()->isReadable());
+
+		$this->assertCount(2, $upload['user']['image']);
 	}
 }

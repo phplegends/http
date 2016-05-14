@@ -68,7 +68,17 @@ class Stream implements StreamInterface
 
 	protected function processSize()
 	{
-		$this->size = array_replace(['size' => 0], fstat($this->stream))['size'];
+
+		$fstat = fstat($this->stream);
+
+		if ($fstat === false)
+		{
+			$this->size = 0;
+
+			return;
+		}
+
+		$this->size = array_replace(['size' => 0], $fstat)['size'];
 	}
 
 	public function __toString()

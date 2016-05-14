@@ -7,7 +7,7 @@ class ResponseTest extends PHPUnit_Framework_TestCase
 
 	public function setUp()
 	{
-		$this->resp = new Response('My test', [
+		$this->resp = new Response('My test', 200, [
 			'X-Dev'     => 'Testing',
 			'X-Library' => 'PHPLegends\Http',
 		]);
@@ -37,15 +37,12 @@ class ResponseTest extends PHPUnit_Framework_TestCase
 	}	
 
 
-	public function __testHeader()
+	public function testHeader()
 	{
-
 
 		$upper = $this->resp->getHeader('X-DEV');
 
 		$lower = $this->resp->getHeader('x-dev');
-
-		var_dump($upper, $lower);
 
 		$this->assertEquals(['Testing'], $upper);
 

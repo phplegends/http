@@ -6,18 +6,31 @@ use Psr\Http\Message\UriInterface;
 
 class Uri implements UriInterface
 {
-
+        
     protected $components = [
         'host'     => '',
         'port'     => NULL,
         'query'    => '',
         'fragment' => '',
         'scheme'   => '',
+        'user'     => '',
+        'pass'     => '',
+        'path'     => ''
     ];
 
+    /**
+    * 
+    */
 	public function __construct($uri = '')
 	{
-        $this->components = parse_url($uri) + $this->components;
+        $parts = parse_url($uri);
+
+        if (! is_array($parts))
+        {
+            throw new \InvalidArgumentException("Unable to parse url '{$uri}'");  
+        }
+
+        $this->components = $parts + $this->components;
 	}
 
 	public function getQuery()
@@ -32,7 +45,20 @@ class Uri implements UriInterface
 
     public function getAuthority()
     {
+        $authority = '';
 
+        if ($userinfo = $this->getUserInfo()) {
+            $authority .= $userinfo . '@';
+        }
+
+        $authority .= $this->getHost();
+
+        if ($port = $this->getPort())
+        {
+            $authority .= ':' . $port;
+        }
+
+        return $authority;
     }
 
     public function getHost()
@@ -52,17 +78,20 @@ class Uri implements UriInterface
 
     public function withScheme($scheme)
     {
+    
         if (! is_string($scheme))
         {
             throw new \InvalidArgumentException('Invalid scheme');
         }
+
+        $scheme = static::normalizeScheme($scheme);
 
         return $this->withAttribute('scheme', $scheme);
     }
 
     public function getUserInfo()
     {
-        $userinfo = null;
+        $userinfo = '';
 
         if ($this->components['user'])
         {
@@ -74,7 +103,7 @@ class Uri implements UriInterface
             $userinfo .= ':' . $this->components['pass'];
         }
 
-        return $user;
+        return $userinfo;
     }
 
     public function withPort($port)
@@ -137,7 +166,7 @@ class Uri implements UriInterface
 
         $clone->components[$attr] = $value;
 
-        return $this;
+        return $clone;
     }
 
     public function withPath($path)
@@ -155,45 +184,46 @@ class Uri implements UriInterface
         return $this->components['scheme'];
     }
 
-	public static function createFromServerGlobal()
-    {
-
-        $uri = new Uri();
-
-        if (isset($_SERVER['HTTPS'])) {
-
-            $uri = $uri->withScheme($_SERVER['HTTPS'] == 'on' ? 'https' : 'http');
-        }
-
-        if (isset($_SERVER['HTTP_HOST'])) {
-
-            $uri = $uri->withHost($_SERVER['HTTP_HOST']);
-
-        } elseif (isset($_SERVER['SERVER_NAME'])) {
-
-            $uri = $uri->withHost($_SERVER['SERVER_NAME']);
-        }
-
-        if (isset($_SERVER['SERVER_PORT'])) {
-
-            $uri = $uri->withPort($_SERVER['SERVER_PORT']);
-        }
-
-        if (isset($_SERVER['REQUEST_URI'])) {
-
-            $uri = $uri->withPath(strtok($_SERVER['REQUEST_URI'], '?'));
-        }
-
-        if (isset($_SERVER['QUERY_STRING'])) {
-
-            $uri = $uri->withQuery($_SERVER['QUERY_STRING']);
-        }
-        
-        return $uri;
-    }
 
     public function __toString()
     {
+        return $this->build();
+    }
+
+    public function build()
+    {
+        $uri = '';
+
+        $c = $this->components;
+
+        if ($c['scheme']) {
+            $uri .= $c['scheme'] . '://';
+        }
+
+        if ($authority = $this->getAuthority()) {
+
+            $uri .= $authority;
+        }
+
+        if ($c['path']) {
+            $uri .= '/' . $c['path'];
+        }
+
+        if ($c['query']) {
+            $uri .= '?' . $c['scheme'];
+        }
+
+        if ($c['fragment']) {
+            $uri .= '#' .$c['fragment'];
+        }
+
+        return $uri;
 
     }
+
+    protected static function normalizeScheme($scheme)
+    {
+        return strtolower(rtrim($scheme, ':/'));
+    }
+
 }

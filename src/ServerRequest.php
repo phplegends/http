@@ -3,6 +3,8 @@
 namespace PHPLegends\Http;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UriInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * 
@@ -21,6 +23,22 @@ class ServerRequest extends Request implements ServerRequestInterface
 
 	protected $attributes = [];
 
+    protected $parsedBody = [];
+
+    public function __construct (
+    	$method,
+    	UriInterface $uri,
+    	array $headers = [],
+    	StreamInterface $body = null,
+    	$protocolVersion = '1.1',
+    	$serverParams = []
+    ) {
+
+    	parent::__construct($method, $uri, $headers, $body, $protocolVersion);
+
+    	$this->serverParams = $serverParams;
+    }
+
     /**
      * Gets the value of serverParams.
      *
@@ -29,20 +47,6 @@ class ServerRequest extends Request implements ServerRequestInterface
     public function getServerParams()
     {
         return $this->serverParams;
-    }
-
-    /**
-     * Sets the value of serverParams.
-     *
-     * @param mixed $serverParams the server params
-     *
-     * @return self
-     */
-    protected function setServerParams($serverParams)
-    {
-        $this->serverParams = $serverParams;
-
-        return $this;
     }
 
     /**
@@ -56,20 +60,6 @@ class ServerRequest extends Request implements ServerRequestInterface
     }
 
     /**
-     * Sets the value of cookieParams.
-     *
-     * @param mixed $cookieParams the cookie params
-     *
-     * @return self
-     */
-    protected function setCookieParams($cookieParams)
-    {
-        $this->cookieParams = $cookieParams;
-
-        return $this;
-    }
-
-    /**
      * Gets the value of queryParams.
      *
      * @return mixed
@@ -77,20 +67,6 @@ class ServerRequest extends Request implements ServerRequestInterface
     public function getQueryParams()
     {
         return $this->queryParams;
-    }
-
-    /**
-     * Sets the value of queryParams.
-     *
-     * @param mixed $queryParams the query params
-     *
-     * @return self
-     */
-    protected function setQueryParams($queryParams)
-    {
-        $this->queryParams = $queryParams;
-
-        return $this;
     }
 
     /**
@@ -110,11 +86,43 @@ class ServerRequest extends Request implements ServerRequestInterface
      *
      * @return self
      */
-    public function setUploadedFiles($uploadedFiles)
+    protected static function normalizeUploadedFiles(array $uploadedFiles)
     {
-        $this->uploadedFiles = $uploadedFiles;
+        $files = [];
 
-        return $this;
+        foreach ($uploadedFiles as $key => $value) {
+
+            if ($value instanceof UploadedFileInterface) {
+
+                $files[$key] = $value;
+
+            } elseif (is_array($value) && isset($value['tmp_name'])) {
+
+                $files[$key] = static::createUploadedFileFromSpec($value);
+
+            } elseif (is_array($value)) {
+                
+                $files[$key]  = static::normalizeUploadedFiles($value);
+
+            } else {
+
+                throw new \InvalidArgumentException('Invalid uploaded files value');
+            }
+        }
+
+        return $files;
+    }
+
+    protected static function createUploadedFileFromSpec(array $value)
+    {
+        if (is_array($value['tmp_name']))
+        {
+            return static::normalizeUploadedFiles($value);
+        }
+
+        return new UploadedFile(
+            $value['tmp_name'], $value['size'], $value['error'], $value['type']
+        );
     }
 
     /**
@@ -127,39 +135,38 @@ class ServerRequest extends Request implements ServerRequestInterface
         return $this->attributes;
     }
 
-    /**
-     * Sets the value of attributes.
-     *
-     * @param array $attributes the attributes
-     *
-     * @return self
-     */
-    public function setAttributes(array  $attributes)
-    {
-        $this->attributes = $attributes;
-
-        return $this;
-    }
-
-
-
     public function withCookieParams(array $cookies)
     {
+        $clone = clone $this;
 
+        $clone->cookieParams = $cookies;
+
+        return $clone;
     }
 
     public function withQueryParams(array $params)
-    {
+    {   
+        $clone = clone $this;
 
+        $clone->serverParams = $params;
+
+        return $clone;
     }
 
-    public function withUploadedFiles(array $attributes)
+    public function withUploadedFiles(array $files)
     {
+        $clone = clone $this;
 
+        $clone->uploadedFiles = $files;
+
+        return $clone;
     }
 
     public function getParsedBody()
     {
+        $body = $this->getBody()->rewind()->getContents();
+
+        return $this->parsedBody;
 
     }
 
@@ -170,17 +177,35 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     public function withParsedBody($data)
     {
+        $clone = clone $this;
 
+        $clone->parsedBody = $data;
+
+        return $clone;
     }
 
     public function withoutAttribute($name)
     {
+        if (! isset($this->attributes[$name])) {
 
+            return clone $this;
+        }
+
+        $clone = clone $this;
+
+        unset($clone->attribute[$name]);
+
+        return $clone;
     }
 
     public function getAttribute($name, $default = null)
     {
+        if (isset($this->attributes[$name])) {
 
+            return $this->attributes[$name];
+        }
+
+        return $default;
     }
 
     public static function createFromGlobals()
@@ -194,13 +219,58 @@ class ServerRequest extends Request implements ServerRequestInterface
 
         $protocol = isset($_SERVER['SERVER_PROTOCOL']) ? str_replace('HTTP/', '', $_SERVER['SERVER_PROTOCOL']) : '1.1';
 
+        $uri = static::createUriFromGlobals();
+
         $serverRequest = new self($method, $uri, $headers, $body, $protocol, $_SERVER);
 
+
         return $serverRequest
-            ->withCookieParams($_COOKIE)
-            ->withQueryParams($_GET)
-            ->withParsedBody($_POST)
-            ->withUploadedFiles($_FILES);
+                    ->withQueryParams($_GET)
+                    ->withParsedBody($_POST)
+                    ->withCookieParams($_COOKIE)
+                    ->withUploadedFiles(static::normalizeUploadedFiles($_FILES));
+    }
+
+    public static function createUriFromGlobals()
+    {
+
+        $uri = new Uri();
+
+        if (isset($_SERVER['HTTPS'])) {
+
+            $uri = $uri->withScheme($_SERVER['HTTPS'] == 'on' ? 'https' : 'http');
+        }
+
+        if (isset($_SERVER['HTTP_HOST'])) {
+
+            $uri = $uri->withHost($_SERVER['HTTP_HOST']);
+
+        } elseif (isset($_SERVER['SERVER_NAME'])) {
+
+            $uri = $uri->withHost($_SERVER['SERVER_NAME']);
+        }
+
+        if (isset($_SERVER['SERVER_PORT'])) {
+
+            $uri = $uri->withPort($_SERVER['SERVER_PORT']);
+        }
+
+        if (isset($_SERVER['REQUEST_URI'])) {
+
+            $uri = $uri->withPath(strtok($_SERVER['REQUEST_URI'], '?'));
+        }
+
+        if (isset($_SERVER['QUERY_STRING'])) {
+
+            $uri = $uri->withQuery($_SERVER['QUERY_STRING']);
+        }
+        
+        return $uri;
+    }
+
+    public function isSecure()
+    {
+        return $this->getUri()->getScheme() === 'https';
     }
 
 }

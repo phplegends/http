@@ -22,7 +22,7 @@ class Message implements MessageInterface
 	/**
 	 * @var string
 	 * */
-	protected $protocolVersion = '1.2';
+	protected $protocolVersion = '1.1';
 
 
 	public function __construct(StreamInterface $body = null, array $headers = [])
@@ -55,9 +55,7 @@ class Message implements MessageInterface
 	}
 
 	/**
-	 * Gets the value of headers.
-	 *
-	 * @return array
+	 * @{inheritdoc}
 	 */
 	public function getHeaders()
 	{
@@ -109,6 +107,9 @@ class Message implements MessageInterface
 		return $value;
 	}
 
+	/**
+	 * @{inheritdoc}
+	 */
 	public function getHeader($name)
 	{
 		$name = $this->normalizeHeaderName($name);
@@ -118,6 +119,9 @@ class Message implements MessageInterface
 		return $headers[$name];
 	}
 
+	/**
+	 * @{inheritdoc}
+	 */
 	public function hasHeader($name)
 	{
 		return isset($this->headers[$this->normalizeHeaderName($name)]);
@@ -142,6 +146,9 @@ class Message implements MessageInterface
 		return $this->setHeader($name, $value);
 	}
 
+	/**
+	 * @{inheritdoc}
+	 */
 	public function withProtocolVersion($version)
 	{
 		$clone = clone $this;
@@ -149,24 +156,29 @@ class Message implements MessageInterface
 		return $clone->setProtocolVersion($version);
 	}
 
+	/**
+	 * @{inheritdoc}
+	 */
 	public function withHeader($name, $value)
 	{
 		$clone = clone $this;
 
-		$clone->setHeader($name, $value);
-
-		return $clone;
+		return $clone->setHeader($name, $value);
 	}
 
+	/**
+	 * @{inheritdoc}
+	 */
 	public function withoutHeader($name)
 	{
 		$clone = clone $this;
 
-		$clone->removeHeader($name);
-
-		return $clone;
+		return $clone->removeHeader($name);
 	}
 
+	/**
+	 * @{inheritdoc}
+	 */
 	public function getHeaderLine($name)
 	{
 		if ($this->hasHeader($name))
@@ -177,12 +189,19 @@ class Message implements MessageInterface
 		return '';
 	}
 
+	/**
+	 * @{inheritdoc}
+	 */
 	public function withAddedHeader($name, $value)
 	{
 		$clone = clone $this;
 
 		return $clone->mergeHeader($name, $value);
 	}
+
+	/**
+	 * @{inheritdoc}
+	 */
 
 	public function withBody(StreamInterface $body)
 	{
@@ -215,7 +234,7 @@ class Message implements MessageInterface
 	    return $this;
 	}
 
-	protected function normalizeHeaderName($name)
+	protected static function normalizeHeaderName($name)
 	{
 		return mb_convert_case($name, MB_CASE_TITLE);
 	}

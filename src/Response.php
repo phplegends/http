@@ -89,8 +89,8 @@ class Response extends Message implements ResponseInterface
             $body = Stream::createFromString($body);
 		}
 
-        $this->setHeader('Content-Type', 'text/html; charset=utf-8;');
-        
+        $headers += ['Content-Type' => 'text/html; charset=utf-8;'];
+                
         parent::__construct($body, $headers);
 	}
 
@@ -142,7 +142,7 @@ class Response extends Message implements ResponseInterface
      *
      * @return self
      */
-    public function setStatusCode($statusCode)
+    protected function setStatusCode($statusCode)
     {
     	if (! is_int($statusCode))
     	{

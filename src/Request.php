@@ -14,7 +14,13 @@ class Request extends Message implements RequestInterface
 
 	protected $method = 'GET';
 
-    public function __construct ($method, UriInterface $uri, array $headers = [], StreamInterface $body = null, $protocolVersion = '1.1') {
+    public function __construct (
+    	$method,
+    	UriInterface $uri,
+    	array $headers = [],
+    	StreamInterface $body = null,
+    	$protocolVersion = '1.1'
+    ) {
 
       	parent::__construct($body, $headers);
 
@@ -107,11 +113,6 @@ class Request extends Message implements RequestInterface
         $this->target = $target;
 
         return $this;
-    }
-
-    public function isSecure()
-    {
-    	return $this->getUri()->getScheme() === 'https';
     }
 
 }
