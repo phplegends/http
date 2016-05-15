@@ -25,6 +25,17 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     protected $parsedBody = [];
 
+
+    /**
+     * The object constructor ;)
+     * 
+     * @param string $method
+     * @param \Psr\Http\Message\UriInterface $uri
+     * @param array $headers
+     * @param |Psr\Http\Message\StreamInterface | null $body
+     * @param string $protocolVersion
+     * @param array $serverParams
+     * */
     public function __construct (
     	$method,
     	UriInterface $uri,
@@ -121,7 +132,11 @@ class ServerRequest extends Request implements ServerRequestInterface
         }
 
         return new UploadedFile(
-            $value['tmp_name'], $value['size'], $value['error'], $value['type']
+            $value['tmp_name'], 
+            $value['name'], 
+            $value['size'],
+            $value['error'],
+            $value['type']
         );
     }
 

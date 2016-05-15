@@ -19,14 +19,17 @@ class RequestTest extends PHPUnit_Framework_TestCase
 						'tmp_name' => tempnam(null, 'uploaded'),
 						'size'     => 555,
 						'error'    => 0,
-						'type'     => 'image/png'
+						'type'     => 'image/png',
+						'name'     => 'joao.png'
 					], 
 
 					[
 						'tmp_name' => tempnam(null, 'uploaded'),
 						'size'     => 555,
-						'error'    => 0,
-						'type'     => 'image/png'
+						'error'    => 4,
+						'type'     => 'image/jpeg', 
+
+						'name'     => 'maria.jpg'
 					]
 				]
 			]
@@ -75,5 +78,21 @@ class RequestTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue($upload['user']['image'][0]->getStream()->isReadable());
 
 		$this->assertCount(2, $upload['user']['image']);
+
+		$this->assertEquals(
+			'joao.png',
+
+			$upload['user']['image'][0]->getClientFilename()
+		);
+
+		$upload['user']['image'][0]->assertOk();
+
+		$this->assertTrue($upload['user']['image'][0]->isValid());
+
+		$this->assertFalse($upload['user']['image'][1]->isValid());
+
+		$this->assertEquals('No file was uploaded', $upload['user']['image'][1]->getErrorMessage());
+
+
 	}
 }
