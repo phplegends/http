@@ -91,7 +91,7 @@ class ServerRequest extends Request implements ServerRequestInterface
     }
 
     /**
-     * Sets the value of uploadedFiles.
+     * Normalizes the value of uploadedFiles.
      *
      * @param mixed $uploadedFiles the uploaded files
      *
@@ -187,7 +187,11 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     public function withAttribute($name, $attribute)
     {
+        $clone = clone $this;
 
+        $clone->attributes[$name] = $attributes;
+
+        return $clone;
     }
 
     public function withParsedBody($data)
@@ -286,6 +290,15 @@ class ServerRequest extends Request implements ServerRequestInterface
     public function isSecure()
     {
         return $this->getUri()->getScheme() === 'https';
+    }
+
+    public function withAttributes(array $attributes)
+    {
+        $clone = clone $this;
+
+        $clone->attributes = $attribute += $clone->attributes;
+
+        return $clone;
     }
 
 }

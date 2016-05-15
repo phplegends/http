@@ -4,6 +4,10 @@ namespace PHPLegends\Http;
 
 use Psr\Http\Message\UriInterface;
 
+/**
+ * @author Wallace de Souza Vizerra <wallacemaxters@gmail.com>
+ * */
+
 class Uri implements UriInterface
 {
         
@@ -18,9 +22,8 @@ class Uri implements UriInterface
         'path'     => ''
     ];
 
-
     /**
-    * 
+    * @param string $uri
     */
 	public function __construct($uri = '')
 	{

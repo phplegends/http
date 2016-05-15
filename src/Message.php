@@ -5,6 +5,9 @@ namespace PHPLegends\Http;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
 
+/**
+ * @author Wallace de Souza Vizerra <wallacemaxters@gmail.com>
+ * */
 class Message implements MessageInterface
 {
 
@@ -237,5 +240,12 @@ class Message implements MessageInterface
 	protected static function normalizeHeaderName($name)
 	{
 		return mb_convert_case($name, MB_CASE_TITLE);
+	}
+
+	public function withHeaders(array $headers)
+	{
+		$clone = clone $this;
+
+		return $clone->setHeaders($headers);
 	}
 }

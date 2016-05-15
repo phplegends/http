@@ -1,17 +1,32 @@
 <?php
 
 namespace PHPLegends\Http;
+
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 
+/**
+ * @author Wallace de Souza Vizerra <wallacemaxters@gmail.com>
+ * */
 class Request extends Message implements RequestInterface
 {
 
-	protected $target;
+	/**
+	 *  
+	 **/
+	protected $requestTarget;
 
+	/**
+	 * @var Psr\Http\Message\UriInterface
+	 * */
 	protected $uri;
 
+	/**
+	 * Method of request
+	 * 
+	 * @var string
+	 * */
 	protected $method = 'GET';
 
     public function __construct (
@@ -31,12 +46,26 @@ class Request extends Message implements RequestInterface
 
 	public function getRequestTarget()
 	{
-		return $this->target;
+		if ($this->requestTarget) {
+
+			return $this->requestTarget;
+		}
+
+		$target = rtrim($this->getUri()->getPath(), '/') . '/';
+
+		if ($query = $this->getUri()->getQuery()) {
+
+			$target .= '?' . $query;
+		}
+
+		return $target;
+
 	}
 
-	public function setRequestTarget($target)
+	protected function setRequestTarget($target)
 	{
-		$this->target = $target;
+
+		$this->requestTarget = $target;
 
 		return $this;
 	}
@@ -53,7 +82,7 @@ class Request extends Message implements RequestInterface
 		return $this->method;
 	}
 
-	public function setMethod($method)
+	protected function setMethod($method)
 	{
 		$this->method = $method;
 
@@ -72,7 +101,7 @@ class Request extends Message implements RequestInterface
 		return $this->uri;
 	}
 
-	public function setUri(UriInterface $uri)
+	protected function setUri(UriInterface $uri)
 	{
 		$this->uri = $uri;
 
@@ -85,7 +114,7 @@ class Request extends Message implements RequestInterface
 
 		if (! $preserveHost)
 		{
-			$clone->removeAllHeaders();
+			// Corrigir essa parada aqui
 		}
 
 		return $clone->setUri($uri);

@@ -1,9 +1,13 @@
 <?php
 
 namespace PHPLegends\Http;
+
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
+/**
+ * @author Wallace de Souza Vizerra <wallacemaxters@gmail.com>
+ * */
 class Response extends Message implements ResponseInterface
 {
 	

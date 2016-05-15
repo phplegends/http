@@ -4,6 +4,10 @@ namespace PHPLegends\Http;
 
 use Psr\Http\Message\StreamInterface;
 
+/**
+ * @author Wallace de Souza Vizerra <wallacemaxters@gmail.com>
+ * */
+
 class Stream implements StreamInterface
 {
 
