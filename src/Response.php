@@ -94,6 +94,8 @@ class Response extends Message implements ResponseInterface
 		}
 
         $headers += ['Content-Type' => 'text/html; charset=utf-8;'];
+
+        $this->setStatusCode($code);
                 
         parent::__construct($body, $headers);
 	}
@@ -210,7 +212,7 @@ class Response extends Message implements ResponseInterface
 
         foreach ($this->getHeaderKeys() as $name)
         {
-            header(sprintf('%s: %s', $name, $this->getHeaderLine($name)), false);
+            header(sprintf('%s: %s', $name, $this->getHeaderLine($name)), true);
         }
 
         return true;

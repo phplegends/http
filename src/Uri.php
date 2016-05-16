@@ -37,16 +37,25 @@ class Uri implements UriInterface
         $this->components = $parts + $this->components;
 	}
 
+    /**
+     * @{inheritdoc}
+     * */
 	public function getQuery()
 	{
 		return $this->components['query'];
 	}
 
+    /**
+     * @{inheritdoc}
+     * */
     public function getPort()
     {
         return $this->components['port'];
     }
 
+    /**
+     * @{inheritdoc}
+     * */
     public function getAuthority()
     {
         $authority = '';
@@ -65,21 +74,33 @@ class Uri implements UriInterface
         return $authority;
     }
 
+    /**
+     * @{inheritdoc}
+     * */
     public function getHost()
     {
         return $this->components['host'];
     }
 
+    /**
+     * @{inheritdoc}
+     * */
     public function getPath()
     {
         return $this->components['path'];
     }
 
+    /**
+     * @{inheritdoc}
+     * */
     public function getFragment()
     {
         return $this->components['fragment'];
     }
 
+    /**
+     * @{inheritdoc}
+     * */
     public function withScheme($scheme)
     {
     
@@ -93,6 +114,10 @@ class Uri implements UriInterface
         return $this->withAttribute('scheme', $scheme);
     }
 
+
+    /**
+     * @{inheritdoc}
+     * */
     public function getUserInfo()
     {
         $userinfo = '';
@@ -110,16 +135,22 @@ class Uri implements UriInterface
         return $userinfo;
     }
 
+    /**
+     * @{inheritdoc}
+     * */
     public function withPort($port)
     {
-        if (is_int($port) || is_null($port))
-        {
+        if (preg_match('/^\d+$/', $port) > 0 || is_null($port)) {
+
             return $this->withAttribute('port', $port);
         }
 
         throw new \InvalidArgumentException('Invalid port');
     }
 
+    /**
+     * @{inheritdoc}
+     * */
     public function withHost($host)
     {        
         if (! is_string($host))
@@ -130,6 +161,9 @@ class Uri implements UriInterface
         return $this->withAttribute('host', $host);
     }
 
+    /**
+     * @{inheritdoc}
+     * */
     public function withUserInfo($user, $password = null)
     {
         $clone = clone $this;
@@ -139,13 +173,12 @@ class Uri implements UriInterface
         return $clone;
     }
 
+    /**
+     * @{inheritdoc}
+     * */
     public function withQuery($query)
     {
-        if (is_array($query))
-        {
-            $query = http_build_query($query);
-
-        } elseif (! is_string($query)) {
+        if (! is_string($query)) {
 
             throw new \InvalidArgumentException('Invalid query, only query or string');
         }
@@ -153,6 +186,22 @@ class Uri implements UriInterface
         return $this->withAttribute('query', $query);
     }
 
+    /**
+     * 
+     * 
+     * @param array $queryParams
+     * @return self
+     * */
+    public function withQueryParams(array $queryParams)
+    {
+        $query = http_build_query($queryParams);
+
+        return $this->withQuery($query);
+    }
+
+    /**
+     * @{inheritdoc}
+     * */
     public function withFragment($fragment)
     {
 
@@ -164,6 +213,13 @@ class Uri implements UriInterface
         return $this->withAttribute('fragment', $fragment);
     }
 
+    /**
+     * Creates a new attribute in uri, returning a cloned uri
+     * 
+     * @param string $attr
+     * @param mixed $value
+     * @return self (clone)
+     * */
     protected function withAttribute($attr, $value)
     {
         $clone = clone $this;
@@ -173,6 +229,9 @@ class Uri implements UriInterface
         return $clone;
     }
 
+    /**
+     * @{inheritdoc}
+     * */
     public function withPath($path)
     {
         if ( ! is_string($path)) {
@@ -183,17 +242,26 @@ class Uri implements UriInterface
         return $this->withAttribute('path', $path);
     }
 
+    /**
+     * @{inheritdoc}
+     * */
     public function getScheme()
     {
         return $this->components['scheme'];
     }
 
 
+    /**
+     * @return string
+     * */
     public function __toString()
     {
         return $this->build();
     }
 
+    /**
+     * @return string
+     * */
     public function build()
     {
         $uri = '';
@@ -225,6 +293,12 @@ class Uri implements UriInterface
 
     }
 
+    /**
+     * Normalize scheme 
+     * 
+     * @param string $scheme
+     * @return string
+     * */
     protected static function normalizeScheme($scheme)
     {
         return strtolower(rtrim($scheme, ':/'));

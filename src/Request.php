@@ -13,7 +13,7 @@ class Request extends Message implements RequestInterface
 {
 
 	/**
-	 *  
+	 *  @var string | null
 	 **/
 	protected $requestTarget;
 
@@ -29,6 +29,13 @@ class Request extends Message implements RequestInterface
 	 * */
 	protected $method = 'GET';
 
+	/**
+	 * @param string $method
+	 * @param Psr\Http\Message\UriInterface $uri
+	 * @param array $headers
+	 * @param Psr\Http\Message\StreamInterface | null $body
+	 * @param string $protocolVersion
+	 * */
     public function __construct (
     	$method,
     	UriInterface $uri,
@@ -43,6 +50,10 @@ class Request extends Message implements RequestInterface
         	  ->setUri($uri)
         	  ->setProtocolVersion($protocolVersion);
     }
+
+    /**
+	 * @{inheritdoc}
+	 * */
 
 	public function getRequestTarget()
 	{
@@ -70,6 +81,9 @@ class Request extends Message implements RequestInterface
 		return $this;
 	}
 
+	/**
+	 * @{inheritdoc}
+	 * */
 	public function withRequestTarget($target)
 	{
 		$clone = clone $this;
@@ -77,10 +91,14 @@ class Request extends Message implements RequestInterface
 		return $clone->setRequestTarget($target);
 	}
 
+	/**
+	 * @{inheritdoc}
+	 * */
 	public function getMethod()
 	{
 		return $this->method;
 	}
+
 
 	protected function setMethod($method)
 	{
@@ -89,6 +107,9 @@ class Request extends Message implements RequestInterface
 		return $this;
 	}
 
+	/**
+	 * @{inheritdoc}
+	 * */
 	public function withMethod($method)
 	{
 		$clone = clone $this;
@@ -96,6 +117,9 @@ class Request extends Message implements RequestInterface
 		return $clone->setMethod($method);
 	}
 
+	/**
+	 * @{inheritdoc}
+	 * */
 	public function getUri()
 	{
 		return $this->uri;
@@ -108,13 +132,16 @@ class Request extends Message implements RequestInterface
 		return $this;
 	}
 
+	/**
+	 * @{inheritdoc}
+	 * */
 	public function withUri(UriInterface $uri, $preserveHost = false)
 	{
 		$clone = clone $this;
 
-		if (! $preserveHost)
-		{
-			// Corrigir essa parada aqui
+		if (! $preserveHost && $host = $uri->getHost()) {
+
+			$clone->setHeader('host', $host);
 		}
 
 		return $clone->setUri($uri);

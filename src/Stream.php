@@ -42,14 +42,21 @@ class Stream implements StreamInterface
 	 * @var array
 	 * */
 
-	protected $writableModes = ['w', 'w+', 'wb', 'w+b'];
+	protected $readableModes =  [
+     "r", "w+", "r+", "x+", "c+",
+     "rb", "w+b", "r+b", "x+b", "c+b", "rt", "w+t", "r+t", "x+t", "c+t","a+",
+   ];
 
 
 	/**
 	 * @var array
 	 * */
 
-	protected $readableModes = ['r', 'rb'];
+	protected $writableModes =  [
+		"a","a+",
+		"r+b","x+b","c+b","w+t","r+t","x+t","c+t",
+		"w","w+","rw","r+","x+","c+","wb","w+b",
+	];
 
 
 	public function __construct ($stream = 'php://temp', $mode = 'w')
@@ -67,7 +74,6 @@ class Stream implements StreamInterface
 
 		$this->processSize();
 
-		
 	}
 
 	protected function processSize()
@@ -109,24 +115,43 @@ class Stream implements StreamInterface
 
 	public function read($length)
 	{
+		if (! $this->isReadable()) {
+
+			throw new \RuntimeException('Current stream is not readable or closed');
+		}
+
 		return fread($this->stream, $length);
 	}
 
 	public function tell()
 	{
-		return ftell($this->stream);
+		$result = ftell($this->stream);
+
+        if ($result === false) {
+            throw new \RuntimeException('Unable to determine stream position');
+        }
+
+        return $result;
 	}
 
 	public function write($string)
 	{
-		fwrite($this->stream, $string);
+		if (! $this->isWritable()) {
+			throw new \RuntimeException('Current stream is not writable or closed');
+		}
 
-		return $this;
+		return fwrite($this->stream, $string);
 	}
 
 	public function detach()
 	{
+		$this->size = 0;
 
+		$result = $this->stream;
+
+		$this->stream = null;
+
+		return $result;
 	}
 
 	public function close()
@@ -154,27 +179,48 @@ class Stream implements StreamInterface
 
 	public function isSeekable()
 	{
-		return $this->getMetaData('seekable') === true;
+		return $this->stream !== null && $this->getMetaData('seekable') === true;
 	}
 
+	/**
+	 * @{inheritdoc}
+	 * */
 	public function rewind()
 	{
+
+		if  ($this->stream === null) {
+
+			throw new \RuntimeException('Failure to rewind stream. Stream is current closed');
+		}
+
 		rewind($this->stream);
 	}
 
 	public function isReadable()
 	{
-		return in_array($this->getMetaData('mode'),$this->readableModes, true);
+		return $this->stream !== null && in_array($this->getMetaData('mode'),$this->readableModes, true);
 	}
+
+	/**
+	 * @{inheritdoc}
+	 * */
 
 	public function isWritable()
 	{
-		return in_array($this->getMetaData('mode'), $this->writableModes, true);
+		return $this->stream !== null && in_array($this->getMetaData('mode'), $this->writableModes, true);
 	}
 
+	/**
+	 * @{inheritdoc}
+	 * */
 	public function getMetaData($key =  null)
 	{
-		if ($key === null) {
+
+		if ($this->stream === null) {
+
+			return $key ? null : [];
+
+		} elseif ($key === null) {
 
 			return $this->meta;
 
@@ -186,14 +232,23 @@ class Stream implements StreamInterface
 		return null;
 	}
 
+	/**
+	 * @{inheritdoc}
+	 * */
 	public function eof()
 	{
 		return feof($this->stream);
 	}
 
+	/**
+	 * Creates an stream from string
+	 * 
+	 * @param string $string
+	 * @return self
+	 * */
 	public static function createFromString($string)
 	{
-		$stream = new static('php://temp', 'w');
+		$stream = new static('php://temp', 'wb');
 
 		$stream->write($string);
 

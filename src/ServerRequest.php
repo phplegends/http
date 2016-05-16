@@ -163,7 +163,7 @@ class ServerRequest extends Request implements ServerRequestInterface
     {   
         $clone = clone $this;
 
-        $clone->serverParams = $params;
+        $clone->queryParams = $params;
 
         return $clone;
     }
