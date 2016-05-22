@@ -73,6 +73,9 @@ class Request extends Message implements RequestInterface
 
 	}
 
+	/**
+	 * @param string $target 
+	 **/
 	protected function setRequestTarget($target)
 	{
 
@@ -100,6 +103,12 @@ class Request extends Message implements RequestInterface
 	}
 
 
+	/**
+	 * Sets the method of request
+	 * 
+	 * @param string $method
+	 * @return self
+	 * */
 	protected function setMethod($method)
 	{
 		$this->method = $method;
@@ -125,6 +134,12 @@ class Request extends Message implements RequestInterface
 		return $this->uri;
 	}
 
+	/**
+	 * Sets the UriInterface
+	 * 
+	 * @param UriInterface $uri
+	 * @return self
+	 * */
 	protected function setUri(UriInterface $uri)
 	{
 		$this->uri = $uri;
@@ -146,29 +161,5 @@ class Request extends Message implements RequestInterface
 
 		return $clone->setUri($uri);
 	}
-
-    /**
-     * Gets the value of target.
-     *
-     * @return mixed
-     */
-    public function getTarget()
-    {
-        return $this->target;
-    }
-
-    /**
-     * Sets the value of target.
-     *
-     * @param mixed $target the target
-     *
-     * @return self
-     */
-    protected function setTarget($target)
-    {
-        $this->target = $target;
-
-        return $this;
-    }
 
 }

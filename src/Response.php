@@ -176,19 +176,6 @@ class Response extends Message implements ResponseInterface
         echo $this->getBody()->getContents();
     }
 
-    /**
-     * 
-     * @return void
-     * */
-    // public function __clone()
-    // {
-    //     if (($body = $this->getBody()) instanceof StreamInterface)
-    //     {
-    //         $this->body = clone $body;
-    //     }
-    // }
-
-
     public function getHeaderKeys()
     {
         return array_keys($this->getHeaders());

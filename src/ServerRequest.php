@@ -179,10 +179,7 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     public function getParsedBody()
     {
-        $body = $this->getBody()->rewind()->getContents();
-
         return $this->parsedBody;
-
     }
 
     public function withAttribute($name, $attribute)
@@ -241,7 +238,6 @@ class ServerRequest extends Request implements ServerRequestInterface
         $uri = static::createUriFromGlobals();
 
         $serverRequest = new self($method, $uri, $headers, $body, $protocol, $_SERVER);
-
 
         return $serverRequest
                     ->withQueryParams($_GET)
