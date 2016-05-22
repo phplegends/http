@@ -7,7 +7,7 @@ namespace PHPLegends\Http;
  * 
  * @author Wallace de Souza Vizerra <wallacemaxters@gmail.com>
  * */
-class Redirector extends Response
+class RedirectResponse extends Response
 {
 	public function __construct($location, $code = 302, array $headers = [])
 	{
@@ -20,11 +20,11 @@ class Redirector extends Response
 
 	/**
 	 * In redirector response, the method send cannot 'echos' output
+	 * 
 	 * @return void
 	 * */
 	public function send()
 	{
-
 		if (headers_sent()) {
 
 			throw new \RunTimeException('Cannot redirect after output contents');
