@@ -13,16 +13,36 @@ use Psr\Http\Message\StreamInterface;
  * */
 class ServerRequest extends Request implements ServerRequestInterface
 {
+
+    /**
+     * 
+     * @var array
+     * */
 	protected $serverParams = [];
 
+    /**
+     * @var array
+     * */
 	protected $cookieParams = [];
 
+    /**
+     * @var array
+     * */
 	protected $queryParams = [];
 
+    /**
+     * @var array
+     * */
 	protected $uploadedFiles = [];
 
+    /**
+     * @var array
+     * */
 	protected $attributes = [];
 
+    /**
+     * @var array
+     * */
     protected $parsedBody = [];
 
 
